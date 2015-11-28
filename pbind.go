@@ -9,17 +9,22 @@ const (
 
 type Durations func() time.Duration
 
-type Pattern func() float32
+type CtrlFunc func() float32
+
+type InstFunc func() string
 
 type Pbind struct {
-	durations Durations
-	patterns  map[string]Pattern
+	Instruments InstFunc
+	Controls    map[string]CtrlFunc
 }
 
-func (p *Pbind) Play() error {
-	for dur := p.durations(); true; dur = p.durations() {
-		// generate patterns
-		time.Sleep(dur)
+func (pbind Pbind) Next() Event {
+	e := Event{
+		Instrument: pbind.Instruments(),
+		Controls:   map[string]float32{},
 	}
-	return nil
+	for key, ctrlFunc := range pbind.Controls {
+		e.Controls[key] = ctrlFunc()
+	}
+	return e
 }
