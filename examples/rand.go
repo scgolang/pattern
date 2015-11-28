@@ -9,8 +9,6 @@ import (
 )
 
 var (
-	Release = sc.C(0.5)
-
 	Notes = []float32{
 		sc.Midicps(48),
 		sc.Midicps(50),
@@ -32,17 +30,34 @@ var (
 	Def = sc.NewSynthdef("test", func(p sc.Params) sc.Ugen {
 		bus := sc.C(0)
 		gate, freq := p.Add("gate", 1), p.Add("freq", 440)
-		gain := p.Add("gain", 1)
+		gain, release := p.Add("gain", 1), p.Add("release", 0.2)
 		envgen := sc.EnvGen{
-			Env:        sc.EnvPerc{Release: Release},
+			Env:        sc.EnvPerc{Release: release},
 			Gate:       gate,
 			LevelScale: gain,
 			Done:       sc.FreeEnclosing,
 		}.Rate(sc.KR)
-		sig := sc.Blip{Freq: freq}.Rate(sc.AR).Mul(envgen)
+		sig := sc.SinOsc{Freq: freq}.Rate(sc.AR).Mul(envgen)
 		sig = sc.Multi(sig, sig)
 		return sc.Out{bus, sig}.Rate(sc.AR)
 	})
+
+	Controls = map[string]pattern.CtrlFunc{
+		"freq": pattern.Rand(pattern.Inf, Notes),
+		"gain": func() float32 {
+			return float32(0.5)
+		},
+		"release": pattern.Rand(pattern.Inf, []float32{0.1, 0.2, 0.5}),
+	}
+
+	Events = pattern.Pbind{
+		Instruments: func() string { return "test" },
+		Controls:    Controls,
+	}
+
+	Durations = func() time.Duration {
+		return 125 * time.Millisecond
+	}
 )
 
 func main() {
@@ -56,20 +71,7 @@ func main() {
 	}
 
 	// Start playing the pattern.
-	controls := map[string]pattern.CtrlFunc{
-		"freq": pattern.Rand(pattern.Inf, Notes),
-		"gain": func() float32 {
-			return float32(0.5)
-		},
-	}
-	events := pattern.Pbind{
-		Instruments: func() string { return "test" },
-		Controls:    controls,
-	}
-	durations := func() time.Duration {
-		return 125 * time.Millisecond
-	}
-	player, err := pattern.NewPlayer(durations, events)
+	player, err := pattern.NewPlayer(Durations, Events)
 	if err != nil {
 		log.Fatal(err)
 	}
