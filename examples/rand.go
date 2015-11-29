@@ -9,6 +9,11 @@ import (
 	"github.com/scgolang/sc"
 )
 
+const (
+	OctaveMin = 1
+	OctaveMax = 7
+)
+
 var (
 	DefSine = sc.NewSynthdef("testSine", func(p sc.Params) sc.Ugen {
 		bus := sc.C(0)
@@ -138,9 +143,10 @@ func randomNotes() pattern.CtrlFunc {
 	return func() float32 {
 		if i%32 == 0 {
 			scale = scales[rand.Intn(len(scales))]
+			i = 0
 		}
 		i++
-		return sc.Midicps(int(scale[rand.Intn(7)]) + 12*(rand.Intn(3)+3))
+		return sc.Midicps(int(scale[rand.Intn(7)]) + 12*(rand.Intn(OctaveMax)+OctaveMin))
 	}
 }
 
