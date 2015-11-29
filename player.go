@@ -33,14 +33,12 @@ type Player struct {
 func (p *Player) Play() error {
 	for ev, dur := p.nexter.Next(), p.durations(); true; ev, dur = p.nexter.Next(), p.durations() {
 		sid := p.client.NextSynthID()
-		synth, err := p.client.Synth(ev.Instrument, sid, sc.AddToTail, sc.DefaultGroupID, ev.Controls)
-		if err != nil {
+
+		if _, err := p.client.Synth(ev.Instrument, sid, sc.AddToTail, sc.DefaultGroupID, ev.Controls); err != nil {
 			return err
 		}
+
 		time.Sleep(dur)
-		if err := synth.Set(map[string]float32{"gate": 0}); err != nil {
-			return err
-		}
 	}
 	return nil
 }
