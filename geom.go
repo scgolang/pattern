@@ -1,20 +1,23 @@
 package pattern
 
-// Geom emits a geometric series.
-// If length is not Inf or a positive integer, then
-// a runtime panic will occur.
-func Geom(start, grow float64, length int) chan float64 {
-	if length != Inf && length < 1 {
-		panic("length must be positive or Inf")
+// Geom is a geometric series.
+type Geom struct {
+	Start  float32
+	Grow   float32
+	Length int
+	cur    float32
+	idx    int
+}
+
+func (pat *Geom) Next() (float32, error) {
+	if pat.Length > 0 && pat.idx >= pat.Length {
+		return 0, End
 	}
-	c := make(chan float64)
-	cur := start
-	go func() {
-		for i := 0; length == Inf || i < length; i++ {
-			c <- cur
-			cur = cur * grow
-		}
-		close(c)
-	}()
-	return c
+	if pat.idx == 0 {
+		pat.cur = pat.Start
+	}
+	pat.idx++
+	val := pat.cur
+	pat.cur = pat.cur * pat.Grow
+	return val, nil
 }

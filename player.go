@@ -11,40 +11,45 @@ var (
 	ErrDuplicatePlayer = errors.New("duplicate player")
 )
 
-// Event defines a generic event.
-type Event struct {
-	Instrument string
-	Controls   map[string]float32
-}
-
-// Nexter is implemented by anything that can generate events.
-type Nexter interface {
-	Next() Event
-}
-
 // Player can play Events using supercollider.
 type Player struct {
 	client    *sc.Client
-	durations Durations
-	nexter    Nexter
+	durations DurGen
+	events    EventGen
 }
 
 // Play plays a pattern.
 func (p *Player) Play() error {
-	for ev, dur := p.nexter.Next(), p.durations(); true; ev, dur = p.nexter.Next(), p.durations() {
-		sid := p.client.NextSynthID()
+	var (
+		event *Event
+		err   error
+	)
+	for event, err = p.events.Next(); err == nil; event, err = p.events.Next() {
+		dur, ed := p.durations.Next()
+		if ed != nil {
+			if ed == End {
+				return nil
+			}
+			return ed
+		}
 
-		if _, err := p.client.Synth(ev.Instrument, sid, sc.AddToTail, sc.DefaultGroupID, ev.Controls); err != nil {
+		sid, gid, action := p.client.NextSynthID(), int32(sc.DefaultGroupID), int32(sc.AddToTail)
+		inst, ctrls := event.Instrument(), event.Controls()
+
+		if _, err := p.client.Synth(inst, sid, action, gid, ctrls); err != nil {
 			return err
 		}
 
 		time.Sleep(dur)
 	}
+	if err != End {
+		return err
+	}
 	return nil
 }
 
 // NewPlayer returns a new player.
-func NewPlayer(durations Durations, nexter Nexter) (*Player, error) {
+func NewPlayer(durations DurGen, events EventGen) (*Player, error) {
 	scc, err := sc.DefaultClient()
 	if err != nil {
 		return nil, err
@@ -52,6 +57,6 @@ func NewPlayer(durations Durations, nexter Nexter) (*Player, error) {
 	return &Player{
 		client:    scc,
 		durations: durations,
-		nexter:    nexter,
+		events:    events,
 	}, nil
 }

@@ -1,20 +1,19 @@
 package pattern
 
-// Arith emits an arithmetic series.
-// If length is not Inf or a positive integer, then
-// a runtime panic will occur.
-func Arith(start, step float64, length int) chan float64 {
-	if length != Inf && length < 1 {
-		panic("length must be positive or Inf")
+// Arith is a an arithmetic series.
+type Arith struct {
+	Start  float32 `json:"start"`
+	Step   float32 `json:"step"`
+	Length int     `json:"length"`
+	idx    int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Arith) Next() (float32, error) {
+	if pat.Length > 0 && pat.idx >= pat.Length {
+		return 0, End
 	}
-	c := make(chan float64)
-	cur := start
-	go func() {
-		for i := 0; length == Inf || i < length; i++ {
-			c <- cur
-			cur = cur + step
-		}
-		close(c)
-	}()
-	return c
+	val := pat.Start + (float32(pat.idx) * pat.Step)
+	pat.idx++
+	return val, nil
 }

@@ -44,31 +44,22 @@ var (
 		return sc.Out{bus, sig}.Rate(sc.AR)
 	})
 
-	Controls = map[string]pattern.CtrlFunc{
-		"freq": randomNotes(),
-		"gain": func() float32 {
-			return float32(0.5)
-		},
-		"release": pattern.Rand(pattern.Inf, []float32{0.1, 0.2, 0.5}),
-		"timbre":  pattern.Rand(pattern.Inf, []float32{0, 1, 2}),
+	Controls = map[string]pattern.FloatGen{
+		"freq":    &RandomNotes{},
+		"gain":    pattern.F(0.5),
+		"release": &pattern.Frand{Values: []float32{0.1, 0.2, 0.5}},
+		"timbre":  &pattern.Frand{Values: []float32{0, 1, 2}},
 	}
 
-	Events = pattern.Pbind{
-		Instruments: func() string {
-			return DefName
-		},
-		Controls: Controls,
+	Events = &pattern.Pbind{
+		Instruments: pattern.S(DefName),
+		Controls:    Controls,
 	}
 
-	durations = []time.Duration{
-		// 64 * time.Millisecond,
+	Durations = RandomDur([]time.Duration{
 		128 * time.Millisecond,
 		256 * time.Millisecond,
-	}
-
-	Durations = func() time.Duration {
-		return durations[rand.Intn(len(durations))]
-	}
+	})
 )
 
 func main() {
@@ -100,17 +91,24 @@ var scales = [][7]float32{
 	pattern.Mixolydian,
 }
 
-func randomNotes() pattern.CtrlFunc {
-	i, scale := 0, scales[rand.Intn(len(scales))]
+type RandomNotes struct {
+	idx int
+}
 
-	return func() float32 {
-		if i%128 == 0 {
-			scale = scales[rand.Intn(len(scales))]
-			i = 0
-		}
-		i++
-		return sc.Midicps(int(scale[rand.Intn(7)]) + 12*(rand.Intn(OctaveMax)+OctaveMin))
+func (pat *RandomNotes) Next() (float32, error) {
+	scale := scales[rand.Intn(len(scales))]
+	if pat.idx%128 == 0 {
+		scale = scales[rand.Intn(len(scales))]
+		pat.idx = 0
 	}
+	pat.idx++
+	return sc.Midicps(int(scale[rand.Intn(7)]) + 12*(rand.Intn(OctaveMax)+OctaveMin)), nil
+}
+
+type RandomDur []time.Duration
+
+func (rd RandomDur) Next() (time.Duration, error) {
+	return rd[rand.Intn(len(rd))], nil
 }
 
 func init() {

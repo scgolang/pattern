@@ -1,30 +1,29 @@
 package pattern
 
-import "time"
-
-const (
-	durKey     = "dur"
-	defaultDur = float32(1.0)
-)
-
-type Durations func() time.Duration
-
-type CtrlFunc func() float32
-
-type InstFunc func() string
-
+// Pbind generates events from a map of FloatGen's.
 type Pbind struct {
-	Instruments InstFunc
-	Controls    map[string]CtrlFunc
+	Instruments StringGen
+	Controls    map[string]FloatGen
 }
 
-func (pbind Pbind) Next() Event {
-	e := Event{
-		Instrument: pbind.Instruments(),
-		Controls:   map[string]float32{},
+// Next gets the next event in the pattern.
+func (pbind *Pbind) Next() (*Event, error) {
+	inst, err := pbind.Instruments.Next()
+	if err != nil {
+		return nil, err
 	}
-	for key, ctrlFunc := range pbind.Controls {
-		e.Controls[key] = ctrlFunc()
+
+	event, err := NewEvent(inst)
+	if err != nil {
+		return nil, err
 	}
-	return e
+
+	for key, gen := range pbind.Controls {
+		ctrl, err := gen.Next()
+		if err != nil {
+			return nil, err
+		}
+		event.AddCtrl(key, ctrl)
+	}
+	return event, nil
 }

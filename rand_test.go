@@ -1,17 +1,22 @@
 package pattern
 
-import "reflect"
 import "testing"
 
 func TestRand(t *testing.T) {
-	pat := Rand(10, 1, 2, 3, 4)
-	for val := range pat {
-		if i, isint := val.(int); isint {
-			if i != 1 && i != 2 && i != 3 && i != 4 {
-				t.Fatalf("%d was not one of the provided values", val)
-			}
-		} else {
-			t.Fatalf("expected int but got %s", reflect.TypeOf(val).String())
+	var (
+		n   = 10
+		pat = &Frand{Values: []float32{1, 2, 3, 4}, Length: n}
+	)
+
+	for i := 0; i < n; i++ {
+		val, err := pat.Next()
+
+		if err != nil && err != End {
+			t.Fatal(err)
+		}
+
+		if val != 1 && val != 2 && val != 3 && val != 4 {
+			t.Fatalf("%f was not one of the provided values", val)
 		}
 	}
 }

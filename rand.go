@@ -2,10 +2,34 @@ package pattern
 
 import "math/rand"
 
-// Rand emits randomly selected values from an array a
-// certain number of times.
-func Rand(length int, values []float32) CtrlFunc {
-	return func() float32 {
-		return values[rand.Intn(len(values))]
+// Frand creates a stream of random floats.
+type Frand struct {
+	Values []float32
+	Length int
+	idx    int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Frand) Next() (float32, error) {
+	if pat.Length > 0 && pat.idx >= pat.Length {
+		return 0, End
 	}
+	pat.idx++
+	return pat.Values[rand.Intn(len(pat.Values))], nil
+}
+
+// Srand creates a stream of random strings.
+type Srand struct {
+	Values []string
+	Length int
+	idx    int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Srand) Next() (string, error) {
+	if pat.Length > 0 && pat.idx >= pat.Length {
+		return "", End
+	}
+	pat.idx++
+	return pat.Values[rand.Intn(len(pat.Values))], nil
 }
