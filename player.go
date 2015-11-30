@@ -1,31 +1,30 @@
 package pattern
 
 import (
-	"errors"
 	"time"
 
 	"github.com/scgolang/sc"
 )
 
-var (
-	ErrDuplicatePlayer = errors.New("duplicate player")
-)
-
-// Player can play Events using supercollider.
-type Player struct {
-	client    *sc.Client
-	durations DurGen
-	events    EventGen
+// Player defines a type that can play events.
+type Player interface {
+	Play(EventGen) error
 }
 
-// Play plays a pattern.
-func (p *Player) Play() error {
+// player can play Events using supercollider.
+type player struct {
+	client *sc.Client
+	durs   DurGen
+}
+
+// Play plays a series of events.
+func (p *player) Play(eg EventGen) error {
 	var (
 		event *Event
 		err   error
 	)
-	for event, err = p.events.Next(); err == nil; event, err = p.events.Next() {
-		dur, ed := p.durations.Next()
+	for event, err = eg.Next(); err == nil; event, err = eg.Next() {
+		dur, ed := p.durs.Next()
 		if ed != nil {
 			if ed == End {
 				return nil
@@ -33,8 +32,13 @@ func (p *Player) Play() error {
 			return ed
 		}
 
-		sid, gid, action := p.client.NextSynthID(), int32(sc.DefaultGroupID), int32(sc.AddToTail)
-		inst, ctrls := event.Instrument(), event.Controls()
+		var (
+			sid    = p.client.NextSynthID()
+			gid    = sc.DefaultGroupID
+			action = sc.AddToTail
+			inst   = event.Instrument()
+			ctrls  = event.Controls()
+		)
 
 		if _, err := p.client.Synth(inst, sid, action, gid, ctrls); err != nil {
 			return err
@@ -49,14 +53,10 @@ func (p *Player) Play() error {
 }
 
 // NewPlayer returns a new player.
-func NewPlayer(durations DurGen, events EventGen) (*Player, error) {
-	scc, err := sc.DefaultClient()
+func NewPlayer(durs DurGen) (Player, error) {
+	client, err := sc.DefaultClient()
 	if err != nil {
 		return nil, err
 	}
-	return &Player{
-		client:    scc,
-		durations: durations,
-		events:    events,
-	}, nil
+	return &player{client: client, durs: durs}, nil
 }

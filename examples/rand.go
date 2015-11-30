@@ -73,11 +73,11 @@ func main() {
 	}
 
 	// Start playing the pattern.
-	player, err := pattern.NewPlayer(Durations, Events)
+	player, err := pattern.NewPlayer(Durations)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := player.Play(); err != nil {
+	if err := player.Play(Events); err != nil {
 		log.Fatal(err)
 	}
 }
