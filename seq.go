@@ -1,16 +1,45 @@
 package pattern
 
-// Seq cycles over a list of values repeats times.
-func Seq(repeats int, values ...interface{}) chan interface{} {
-	l := len(values)
-	c := make(chan interface{})
-	go func() {
-		for r := 0; r < repeats; r++ {
-			for i := 0; i < l; i++ {
-				c <- values[i]
-			}
+// Fseq cycles over a list of float values.
+type Fseq struct {
+	Values  []float32
+	Repeats int
+	idx     int
+	rep     int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Fseq) Next() (float32, error) {
+	if pat.idx >= len(pat.Values) {
+		pat.rep++
+		if pat.Repeats > 0 && pat.rep >= pat.Repeats {
+			return 0, End
 		}
-		close(c)
-	}()
-	return c
+		pat.idx = 0
+	}
+	val := pat.Values[pat.idx]
+	pat.idx++
+	return val, nil
+}
+
+// Sseq cycles over a list of float values.
+type Sseq struct {
+	Values  []string
+	Repeats int
+	idx     int
+	rep     int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Sseq) Next() (string, error) {
+	if pat.idx >= len(pat.Values) {
+		pat.rep++
+		if pat.Repeats > 0 && pat.rep >= pat.Repeats {
+			return "", End
+		}
+		pat.idx = 0
+	}
+	val := pat.Values[pat.idx]
+	pat.idx++
+	return val, nil
 }

@@ -2,19 +2,56 @@ package pattern
 
 import "math/rand"
 
-// Shuf emits a shuffled version of the Values list
-// Repeats times
-func Shuf(repeats int, values ...interface{}) chan interface{} {
-	l := len(values)
-	c := make(chan interface{})
-	perm := rand.Perm(l)
-	go func() {
-		for r := 0; r < repeats; r++ {
-			for i := range perm {
-				c <- values[i]
-			}
+// Fshuf generates a pattern that is a pseudo-random
+// permutation of the list of values.
+type Fshuf struct {
+	Values  []float32 `json:"values"`
+	Repeats int       `json:"repeats"`
+	indices []int
+	idx     int
+	rep     int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Fshuf) Next() (float32, error) {
+	if pat.idx == 0 && pat.rep == 0 {
+		pat.indices = rand.Perm(len(pat.Values))
+	}
+	if pat.idx >= len(pat.Values) {
+		pat.rep++
+		if pat.Repeats > 0 && pat.rep >= pat.Repeats {
+			return 0, End
 		}
-		close(c)
-	}()
-	return c
+		pat.idx = 0
+	}
+	val := pat.Values[pat.indices[pat.idx]]
+	pat.idx++
+	return val, nil
+}
+
+// Sshuf generates a pattern that is a pseudo-random
+// permutation of the list of values.
+type Sshuf struct {
+	Values  []string `json:"values"`
+	Repeats int      `json:"repeats"`
+	indices []int
+	idx     int
+	rep     int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Sshuf) Next() (string, error) {
+	if pat.idx == 0 && pat.rep == 0 {
+		pat.indices = rand.Perm(len(pat.Values))
+	}
+	if pat.idx >= len(pat.Values) {
+		pat.rep++
+		if pat.Repeats > 0 && pat.rep >= pat.Repeats {
+			return "", End
+		}
+		pat.idx = 0
+	}
+	val := pat.Values[pat.indices[pat.idx]]
+	pat.idx++
+	return val, nil
 }

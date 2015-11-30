@@ -2,25 +2,19 @@ package pattern
 
 import "math/rand"
 
-// White emits length random numbers between lo and hi.
-// If length is not Inf or a positive integer, then
-// a runtime panic will occur.
-// If hi is not greater than lo a runtime panic will occur.
-func White(lo, hi float64, length int) chan float64 {
-	if length != Inf && length < 1 {
-		panic("length must be positive or Inf")
+// Fwhite generates random floats between lo and hi.
+type Fwhite struct {
+	Lo     float32 `json:"lo"`
+	Hi     float32 `json:"hi"`
+	Length int     `json:"length"`
+	idx    int
+}
+
+// Next returns the next value in the pattern.
+func (pat *Fwhite) Next() (float32, error) {
+	if pat.Length > 0 && pat.idx >= pat.Length {
+		return 0, End
 	}
-	if hi <= lo {
-		panic("hi must be greater than lo")
-	}
-	c := make(chan float64)
-	m := hi - lo
-	b := lo
-	go func() {
-		for i := 0; length == Inf || i < length; i++ {
-			c <- (m * rand.Float64()) + b
-		}
-		close(c)
-	}()
-	return c
+	pat.idx++
+	return ((pat.Hi - pat.Lo) * rand.Float32()) + pat.Lo, nil
 }
