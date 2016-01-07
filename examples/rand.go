@@ -57,6 +57,7 @@ var (
 	}
 
 	Durations = RandomDur([]time.Duration{
+		64 * time.Millisecond,
 		128 * time.Millisecond,
 		256 * time.Millisecond,
 	})
@@ -82,14 +83,17 @@ func main() {
 	}
 }
 
-var scales = [][7]float32{
-	pattern.Major,
-	pattern.NaturalMinor,
-	pattern.Dorian,
-	pattern.Phrygian,
-	pattern.Ionian,
-	pattern.Mixolydian,
-}
+var (
+	scales = [][pattern.ScaleLen]float32{
+		pattern.Major,
+		// pattern.NaturalMinor,
+		// pattern.Dorian,
+		// pattern.Phrygian,
+		// pattern.Ionian,
+		// pattern.Mixolydian,
+	}
+	numScales = len(scales)
+)
 
 type RandomNotes struct {
 	idx int
@@ -98,11 +102,11 @@ type RandomNotes struct {
 func (pat *RandomNotes) Next() (float32, error) {
 	scale := scales[rand.Intn(len(scales))]
 	if pat.idx%128 == 0 {
-		scale = scales[rand.Intn(len(scales))]
+		scale = scales[rand.Intn(numScales)]
 		pat.idx = 0
 	}
 	pat.idx++
-	return sc.Midicps(int(scale[rand.Intn(7)]) + 12*(rand.Intn(OctaveMax)+OctaveMin)), nil
+	return sc.Midicps(int(scale[rand.Intn(pattern.ScaleLen)]) + 12*(rand.Intn(OctaveMax)+OctaveMin)), nil
 }
 
 type RandomDur []time.Duration
