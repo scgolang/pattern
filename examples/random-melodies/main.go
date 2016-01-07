@@ -10,40 +10,11 @@ import (
 )
 
 const (
-	DefName   = "pattern_examples_rand"
 	OctaveMin = 3
 	OctaveMax = 5
 )
 
 var (
-	Def = sc.NewSynthdef(DefName, func(p sc.Params) sc.Ugen {
-		bus := sc.C(0)
-		gate, freq := p.Add("gate", 1), p.Add("freq", 440)
-		gain, release := p.Add("gain", 1), p.Add("release", 0.2)
-		timbre := p.Add("timbre", 0)
-
-		envgen := sc.EnvGen{
-			Env:        sc.EnvPerc{Release: release},
-			Gate:       gate,
-			LevelScale: gain,
-			Done:       sc.FreeEnclosing,
-		}.Rate(sc.KR)
-
-		sine := sc.SinOsc{Freq: freq}.Rate(sc.AR).Mul(envgen)
-		blip := sc.Blip{Freq: freq}.Rate(sc.AR).Mul(envgen)
-		saw := sc.Saw{Freq: freq}.Rate(sc.AR).Mul(envgen)
-
-		sig := sc.Select{
-			Which:  timbre,
-			Inputs: []sc.Input{sine, blip, saw},
-		}.Rate(sc.AR)
-
-		// make it stereo
-		sig = sc.Multi(sig, sig)
-
-		return sc.Out{bus, sig}.Rate(sc.AR)
-	})
-
 	Controls = map[string]pattern.FloatGen{
 		"freq":    &RandomNotes{},
 		"gain":    pattern.F(0.5),
