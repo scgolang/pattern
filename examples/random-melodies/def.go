@@ -3,10 +3,10 @@ package main
 import "github.com/scgolang/sc"
 
 const (
-	DefName = "pattern_examples_rand"
+	defName = "pattern_examples_rand"
 )
 
-var Def = sc.NewSynthdef(DefName, func(p sc.Params) sc.Ugen {
+var def = sc.NewSynthdef(defName, func(p sc.Params) sc.Ugen {
 	// Controls
 	var (
 		bus           = sc.C(0)
