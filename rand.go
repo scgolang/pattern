@@ -12,7 +12,7 @@ type Frand struct {
 // Next returns the next value in the pattern.
 func (pat *Frand) Next() (float32, error) {
 	if pat.Length > 0 && pat.idx >= pat.Length {
-		return 0, End
+		return 0, ErrEnd
 	}
 	pat.idx++
 	return pat.Values[rand.Intn(len(pat.Values))], nil
@@ -28,7 +28,7 @@ type Srand struct {
 // Next returns the next value in the pattern.
 func (pat *Srand) Next() (string, error) {
 	if pat.Length > 0 && pat.idx >= pat.Length {
-		return "", End
+		return "", ErrEnd
 	}
 	pat.idx++
 	return pat.Values[rand.Intn(len(pat.Values))], nil

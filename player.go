@@ -26,7 +26,7 @@ func (p *player) Play(eg EventGen) error {
 	for event, err = eg.Next(); err == nil; event, err = eg.Next() {
 		dur, ed := p.durs.Next()
 		if ed != nil {
-			if ed == End {
+			if ed == ErrEnd {
 				return nil
 			}
 			return ed
@@ -46,7 +46,7 @@ func (p *player) Play(eg EventGen) error {
 
 		time.Sleep(dur)
 	}
-	if err != End {
+	if err != ErrEnd {
 		return err
 	}
 	return nil

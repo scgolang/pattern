@@ -3,9 +3,9 @@ package pattern
 import "errors"
 
 var (
-	// End is the error returned by a pattern to
+	// ErrEnd is the error returned by a pattern to
 	// signal that the pattern has ended.
-	End = errors.New("end of pattern")
+	ErrEnd = errors.New("end of pattern")
 )
 
 // FloatGen is anything that generates floats

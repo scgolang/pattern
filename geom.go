@@ -9,9 +9,10 @@ type Geom struct {
 	idx    int
 }
 
+// Next generates the next value in the pattern.
 func (pat *Geom) Next() (float32, error) {
 	if pat.Length > 0 && pat.idx >= pat.Length {
-		return 0, End
+		return 0, ErrEnd
 	}
 	if pat.idx == 0 {
 		pat.cur = pat.Start

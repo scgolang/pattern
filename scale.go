@@ -1,5 +1,6 @@
 package pattern
 
+// ScaleLen is the length of all the scales below.
 const ScaleLen = 7
 
 // Major intervals           2 2 1 2 2 2 1

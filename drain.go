@@ -10,7 +10,7 @@ func Fdrain(gen FloatGen) ([]float32, error) {
 	for val, err = gen.Next(); err == nil; val, err = gen.Next() {
 		vals = append(vals, val)
 	}
-	if err == End {
+	if err == ErrEnd {
 		return vals, nil
 	}
 	return nil, err
@@ -26,7 +26,7 @@ func Sdrain(gen StringGen) ([]string, error) {
 	for val, err = gen.Next(); err == nil; val, err = gen.Next() {
 		vals = append(vals, val)
 	}
-	if err == End {
+	if err == ErrEnd {
 		return vals, nil
 	}
 	return nil, err

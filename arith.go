@@ -11,7 +11,7 @@ type Arith struct {
 // Next returns the next value in the pattern.
 func (pat *Arith) Next() (float32, error) {
 	if pat.Length > 0 && pat.idx >= pat.Length {
-		return 0, End
+		return 0, ErrEnd
 	}
 	val := pat.Start + (float32(pat.idx) * pat.Step)
 	pat.idx++

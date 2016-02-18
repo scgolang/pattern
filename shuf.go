@@ -20,7 +20,7 @@ func (pat *Fshuf) Next() (float32, error) {
 	if pat.idx >= len(pat.Values) {
 		pat.rep++
 		if pat.Repeats > 0 && pat.rep >= pat.Repeats {
-			return 0, End
+			return 0, ErrEnd
 		}
 		pat.idx = 0
 	}
@@ -47,7 +47,7 @@ func (pat *Sshuf) Next() (string, error) {
 	if pat.idx >= len(pat.Values) {
 		pat.rep++
 		if pat.Repeats > 0 && pat.rep >= pat.Repeats {
-			return "", End
+			return "", ErrEnd
 		}
 		pat.idx = 0
 	}

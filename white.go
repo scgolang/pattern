@@ -13,7 +13,7 @@ type Fwhite struct {
 // Next returns the next value in the pattern.
 func (pat *Fwhite) Next() (float32, error) {
 	if pat.Length > 0 && pat.idx >= pat.Length {
-		return 0, End
+		return 0, ErrEnd
 	}
 	pat.idx++
 	return ((pat.Hi - pat.Lo) * rand.Float32()) + pat.Lo, nil
